@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>DEMO</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #FF6600;
+				margin: 0px;
+				overflow: hidden;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			a {
+				color:#0078ff;
+			}
+
+			#info {
+				color:#fff;
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+				z-index:100;
+			}
+
+			#grad {
+    			  background-image:
+    				radial-gradient(
+     					#FF9933,
+     					#ffffff
+   					 );
+			}
+
+		</style>
+	</head>
+	<body id="grad">
+
+		<div id="info">
+			MERRY CHRISTMAS!
+		</div>
+
+		<script src="build/three.min.js"></script>
+		<script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+
+		<script>
+
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			// constants
+			var THRES_IMAGE = 80;
+			var SIZE_PARTICLE = 6;
+			var SIZE_ENVIRON_PARTICLE = 12;
+			var INC_X_PARTICLE = 2.4;
+			var INC_Y_PARTICLE = 3.8;
+			var OFFSET_X_PARTICLE = -55;
+			var OFFSET_Y_PARTICLE = -100;
+			var NUM_LAYERS = 10;
+			var GAP_LAYERS = 10;
+
+
+			var container, stats;
+			var camera, scene, renderer, particles, environ_particles, geometry, material, i, h, color, sprite, size;
+			var mouseX = 0, mouseY = 0;
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+
+
+			init();
+			// animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				// camera
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 2, 2000 );
+				camera.position.z = 400;
+
+				// scene
+				scene = new THREE.Scene();
+
+				// fog
+				// scene.fog = new THREE.FogExp2( 0x000000, 0.0001 );
+
+				//
+				geometry = new THREE.Geometry();
+				sprite = THREE.ImageUtils.loadTexture( "textures/sprites/snowcrystal_02.png" );
+				
+
+				// load image 
+				var imageTexture = new Image();
+				imageTexture.src = "images/santa_s.png";
+				imageTexture.onload = function() {
+					// // getPixels data
+					var imagedata = getImageData(imageTexture);
+					console.log(imageTexture.width);
+					console.log(imageTexture.height);
+					
+
+					for (var i=0; i<imageTexture.height; i++) {
+						for (var j=0; j<imageTexture.width; j++) {
+							
+							var color = getPixel(imagedata, j, i);	
+							//console.log(color);
+
+							if (color.r < THRES_IMAGE) {
+
+								var vertex = new THREE.Vector3();
+								vertex.x = j + OFFSET_X_PARTICLE;
+								vertex.y = i + OFFSET_Y_PARTICLE;
+								var randz = NUM_LAYERS * Math.random();
+								var randzi = Math.floor(randz) * GAP_LAYERS;
+								//console.log(randz);
+								//console.log(randzi);
+								vertex.z = randzi;
+
+								if (randzi == 90) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE, imageTexture.width + INC_X_PARTICLE]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE, imageTexture.height + INC_Y_PARTICLE]);
+								}
+								else if (randzi == 80) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*2, imageTexture.width + INC_X_PARTICLE*2]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*2, imageTexture.height + INC_Y_PARTICLE*2]);
+								}
+								else if (randzi == 70) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*3, imageTexture.width + INC_X_PARTICLE*3]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*3, imageTexture.height + INC_Y_PARTICLE*3]);
+								}
+								else if (randzi == 60) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*4, imageTexture.width + INC_X_PARTICLE*4]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*4, imageTexture.height + INC_Y_PARTICLE*4]);
+								}
+								else if (randzi == 50) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*5, imageTexture.width + INC_X_PARTICLE*5]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*5, imageTexture.height + INC_Y_PARTICLE*5]);
+								}
+								else if (randzi == 40) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*6, imageTexture.width + INC_X_PARTICLE*6]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*6, imageTexture.height + INC_Y_PARTICLE*6]);
+								}
+								else if (randzi == 30) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*7, imageTexture.width + INC_X_PARTICLE*7]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*7, imageTexture.height + INC_Y_PARTICLE*7]);
+								}
+								else if (randzi == 20) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*8, imageTexture.width + INC_X_PARTICLE*8]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*8, imageTexture.height + INC_Y_PARTICLE*8]);
+								}
+								else if (randzi == 10) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*9, imageTexture.width + INC_X_PARTICLE*9]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*9, imageTexture.height + INC_Y_PARTICLE*9]);
+								}
+								else if (randzi == 0) {
+									vertex.x = convertRange(vertex.x, [0, imageTexture.width], [-INC_X_PARTICLE*10, imageTexture.width + INC_X_PARTICLE*10]);
+									vertex.y = convertRange(vertex.y, [0, imageTexture.height], [-INC_Y_PARTICLE*10, imageTexture.height + INC_Y_PARTICLE*10]);
+								}
+
+
+
+								geometry.vertices.push( vertex );
+							}
+						}
+					}	
+
+
+					material = new THREE.PointCloudMaterial( { size: SIZE_PARTICLE, sizeAttenuation: true, map: sprite, alphaTest: 0.5, transparent: true } );
+					material.color.setHSL( 1.0, 1.0, 1.0);
+
+					particles = new THREE.PointCloud( geometry, material );
+					scene.add( particles );
+
+					//
+					createEnvironmentalParticles();
+					//
+
+					animate();				
+				}
+
+				//
+
+				renderer = new THREE.WebGLRenderer({ alpha: true });
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				//
+				// stats = new Stats();
+				// stats.domElement.style.position = 'absolute';
+				// stats.domElement.style.top = '0px';
+				// container.appendChild( stats.domElement );
+
+				//
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function createEnvironmentalParticles() {
+
+				geometry = new THREE.Geometry();
+				sprite = THREE.ImageUtils.loadTexture( "textures/sprites/snowcrystal_02_alpha.png" );
+
+				for ( i = 0; i < 2000; i ++ ) {
+
+					var vertex = new THREE.Vector3();
+					vertex.x = 1000 * Math.random() - 500;
+					vertex.y = 1000 * Math.random() - 500;
+					vertex.z = 1000 * Math.random() - 500;
+
+					geometry.vertices.push( vertex );
+
+				}
+
+				var material = new THREE.PointCloudMaterial( { size: SIZE_ENVIRON_PARTICLE, sizeAttenuation: true, map: sprite, alphaTest: 0.5, transparent: true } );
+				material.color.setHSL( 1.0, 1.0, 1.0 );
+
+				environ_particles = new THREE.PointCloud( geometry, material );
+				scene.add( environ_particles );
+			}
+
+			// MARK: Image processing function
+			function getImageData(image) {
+				var canvas = document.createElement('canvas');
+				canvas.width = image.width;
+				canvas.height = image.height;
+
+				var context = canvas.getContext('2d');
+				context.drawImage(image, 0, 0);
+
+				return context.getImageData(0,0,image.width,image.height);
+			}
+
+			function getPixel(imageData, x, y) {
+				var position = (x + imageData.width * y) * 4;
+				var data = imageData.data;
+
+				//return data[ position ];
+				return { r: data[ position ], g: data[ position + 1 ], b: data[ position + 2 ], a: data[ position + 3 ] };
+			}
+
+			// MARK: Util functions
+			function convertRange(value, r1, r2) { 
+				return ( value - r1[ 0 ] ) * ( r2[ 1 ] - r2[ 0 ] ) / ( r1[ 1 ] - r1[ 0 ] ) + r2[ 0 ];
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = event.clientX - windowHalfX;
+				mouseY = event.clientY - windowHalfY;
+
+			}
+
+			function onDocumentTouchStart( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+				}
+			}
+
+			function onDocumentTouchMove( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+				}
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				//stats.update();
+
+			}
+
+			function render() {
+
+				var time = Date.now() * 0.00005;
+
+				camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+				camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+
+				camera.lookAt( scene.position );
+
+				// h = ( 360 * ( 1.0 + time ) % 360 ) / 360;
+				// material.color.setHSL( h, 0.5, 0.5 );
+				//material.color.setHSL(1.0, 1.0, 1.0);
+
+				renderer.render( scene, camera );
+			}
+
+		</script>
+	</body>
+</html>
